@@ -13,3 +13,6 @@ Trail Runner is a mini-game written in E2 that can be hosted on a Sandbox server
  - Beautiful rendering of nicknames.
  
 ![alt text](https://i.imgur.com/5q5oD78.jpg)
+![alt text](https://i.imgur.com/Ypn3qX2.jpg)
+![alt text](https://i.imgur.com/CDaGA2n.jpg)
+![alt text](https://i.imgur.com/xwjphWH.jpg)
