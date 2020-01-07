@@ -1,0 +1,288 @@
+#[
+
+    Name: Trail Runner
+    Version: 4.1
+    Author: keytruth (www.steamcommunity.com/id/keytruth)
+
+]#
+
+@name Trail Runner
+@inputs [H]:wirelink
+@persist [Data]:gtable [DropBubbles]:table [Bubbles]:array [MesID]:number
+
+@autoupdate Trail_Runner.txt
+
+interval(100)
+
+if(duped() | dupefinished())
+{
+    reset()   
+}
+
+if(dsClk()) 
+{ 
+    ("ds_" + dsClkName())(dsGetArray())
+    exit()
+}
+
+if(clkName() != "interval" & clkName()) 
+{ 
+    ("timer_" + clkName())()
+    exit()
+}
+
+function entity:setSpeed(Vel:number)
+{
+    This:plyCrouchWalkSpeed(Vel)
+    This:plyWalkSpeed(Vel)
+    This:plyRunSpeed(Vel)   
+}
+
+function void message(Text:string)
+{
+    concmd("say [Trail Runner]: " + Text)
+}
+
+function void aprint(Text:string)
+{
+    print("[Trail Runner]: " + Text)   
+}
+
+if(fileClk("trail_runner.txt"))
+{
+    local Temp = vonDecodeTable(fileRead())
+    
+    if(Temp:count())
+    {
+        Data["Accounts", table] = Temp
+        aprint("All accounts have been successfully uploaded!")
+    }
+    
+    exit()
+}
+
+if(last())
+{
+    if(Data["Accounts", table]:count() > 0)
+    {
+        if(fileCanWrite())
+        {
+            fileWrite("trail_runner.txt", vonEncode(Data["Accounts", table]))  
+            aprint("All accounts have been saved successfully!")
+        }
+        else
+        {
+            error("Unable to save accounts!")   
+        }
+    }
+    
+    foreach(K, V:entity = players())
+    {
+        V:plyRunSpeed(400)
+        V:plyWalkSpeed(200)
+        V:plyJumpPower(200)
+        
+        V:removeTrails()
+    }
+    
+    exit()
+}
+
+if(first())
+{
+    runOnFile(1)
+    runOnLast(1)
+
+    if(entity():getName() != "Trail Runner")
+    {
+        error("The gamemode chip should be called exclusively as \"Trail Runner\"!")   
+    }
+    
+    if(findCanQuery())
+    {
+        findByClass("gmod_wire_expression2")
+        local R = findToArray()
+        
+        foreach(K, V:entity = R)
+        {
+            if(V:getName() == "Trail Runner")
+            {
+                error("Doublet gamemode is not allowed!")   
+            }   
+        }
+    }
+    
+    if(isSinglePlayer()){ error("Download this gamemode for a single game is impossible!") }
+    
+    if(fileCanLoad())
+    {
+        fileLoad("trail_runner.txt")
+    }
+    else
+    {
+        error("Unable to load accounts!")   
+    }
+        
+    hint("Installed gamemode \"Trail Runner\"!", 7)
+       
+    dsJoinGroup("TrailRunner") 
+    Data = gTable("TrailRunner")
+    Data:clear()
+    
+    DropBubbles = table()
+    
+    Data["Accounts", table] = table()
+  
+    timer("replenishment", 2000)
+    timer("rebubbles", 1000)
+    timer("hud_redraw", 100)
+    timer("validate_onbubble", 100)
+    
+    foreach(K, V:entity = players())
+    {
+        Data["Accounts", table][V:steamID(), table] = table("Name" = V:name(), "Speed" = 15, "Coins" = 0, "Trail" = "")
+
+        V:setSpeed(1)
+    }
+}
+
+function timer_replenishment()
+{
+    foreach(K, V:entity = players())
+    {
+        V:setHealth(200)
+        
+        local Speed = Data["Accounts", table][V:steamID(), table]["Speed", number]
+
+        if(Speed > 0)
+        {
+            Data["Accounts", table][V:steamID(), table]["Speed", number] = Data["Accounts", table][V:steamID(), table]["Speed", number] + 1
+            
+            V:plyJumpPower(1)
+            V:setSpeed(Data["Accounts", table][V:steamID(), table]["Speed", number])
+            V:setTrails(15, 6, 1, Data["Accounts", table][V:steamID(), table]["Trail", string], vec(255), 255)
+        }
+        else{Data["Accounts", table][V:steamID(), table] = table("Name" = V:name(), "Speed" = 15, "Coins" = 0, "Trail" = "")}
+    }
+    
+    if(perf()){ timer("replenishment", 2000) }
+}
+
+function timer_rebubbles()
+{   
+    Bubbles:clear()
+    
+    for(I = 0, 15)
+    {
+        local Holo = holoCreate(I, vec(random(-1987.086426, 611.329163), random(-877.983093, 1396.547485), -147.968781 + 35))
+        local Holo2 = holoCreate(16 + I, vec(random(-3216.678467, -5086.808594), random(-1052.449463, -3550.232666), 250.031250 + 35))
+        
+        holoModel(I, "hq_sphere")
+        holoScale(I, vec(2))
+        holoColor(I, randvec(0, 255))
+        holoShadow(I, 1)
+        
+        holoModel(16 + I, "hq_sphere")
+        holoScale(16 + I, vec(2))
+        holoColor(16 + I, randvec(0, 255))
+        holoShadow(16 + I, 1)
+        
+        Bubbles:pushEntity(Holo)
+        Bubbles:pushEntity(Holo2)
+    }
+    
+    dsSend("rebubbles", "TrailRunner", array())
+    
+    if(perf()){ timer("rebubbles", 60000) }
+}
+
+function timer_hud_redraw()
+{
+    foreach(K, V:entity = players())
+    {
+        H:egp3DTracker(K, V:pos() + vec(0, 0, V:height() + 5))
+        H:egp3DTracker(88 + K, (V:pos() + vec(0, 0, V:height() + 5.4)) - vec(0.6, 0.6, 0))
+        
+        H:egpText(33 + K, V:name() + " (" + Data["Accounts", table][V:steamID(), table]["Speed", number] + ")", vec2(1.8, 1.8))
+        H:egpSize(33 + K, 25)
+        H:egpAlign(33 + K, 1)
+        H:egpFont(33 + K, "Coolvetica")
+        H:egpColor(33 + K, vec(255)) 
+        H:egpParent(33 + K, 66 + K)
+        
+        H:egpText(66 + K, V:name() + " (" + Data["Accounts", table][V:steamID(), table]["Speed", number] + ")", vec2())
+        H:egpSize(66 + K, 25)
+        H:egpAlign(66 + K, 1)
+        H:egpFont(66 + K, "Coolvetica")
+        H:egpColor(66 + K, vec(K * 65, K * 95, K * 25)) 
+        H:egpParent(66 + K, K)
+    }
+    
+    if(perf()){ timer("hud_redraw", 100) }
+}
+
+function timer_validate_onbubble()
+{
+    foreach(J, P:entity = players())
+    {
+        foreach(K, V:entity = Bubbles)
+        {
+            if(P:pos():distance(V:pos()) <= 50 & !P:inVehicle())
+            {
+                holoDelete(holoIndex(V))
+                P:soundPlay(J, 1, "garrysmod/balloon_pop_cute.wav")
+                Data["Accounts", table][P:steamID(), table]["Speed", number] = Data["Accounts", table][P:steamID(), table]["Speed", number] + randint(5, 10)
+            }        
+        } 
+        
+        for(I = 0, DropBubbles:count())
+        {
+            if(P:pos():distance(DropBubbles[I, array][1, entity]:pos()) <= 50 & !P:inVehicle())
+            {
+                holoDelete(holoIndex(DropBubbles[I, array][1, entity]))
+                P:soundPlay(J, 1, "garrysmod/balloon_pop_cute.wav")
+                Data["Accounts", table][P:steamID(), table]["Speed", number] = Data["Accounts", table][P:steamID(), table]["Speed", number] + DropBubbles[I, array][3, number]
+                DropBubbles:remove(I)
+            }        
+        }  
+    }   
+
+    if(perf()){ timer("validate_onbubble", 100) }
+}
+
+function ds_drop_bubble(Subdata:array)
+{
+    local Finding = 0
+    
+    for(I = 0, DropBubbles:count())
+    {
+        if(DropBubbles[2, entity]:name() != Subdata[1, entity]:name()){ continue }
+        else
+        {
+            Finding = 1
+            break   
+        }
+    }
+    
+    if(Finding == 0)
+    {
+        if(Subdata[2, number] >= 200 && Subdata[2, number] <= 500)
+        {
+            if(Data["Accounts", table][Subdata[1, entity]:steamID(), table]["Speed", number] >= Subdata[2, number])
+            {
+                Data["Accounts", table][Subdata[1, entity]:steamID(), table]["Speed", number] = Data["Accounts", table][Subdata[1, entity]:steamID(), table]["Speed", number] - Subdata[2, number]
+                
+                local Holo = holoCreate(177 + DropBubbles:count() + 1, ( Subdata[1, entity]:pos():distance(Subdata[1, entity]:eyeTraceCursor():pos()) > 75 & Subdata[1, entity]:pos():distance(Subdata[1, entity]:eyeTraceCursor():pos()) < 200 ? Subdata[1, entity]:eyeTraceCursor():pos() : (owner():pos() + vec(75, 0, 0))) + vec(0, 0, 35))
+        
+                holoModel(177 + DropBubbles:count() + 1, "hq_sphere")
+                holoScale(177 + DropBubbles:count() + 1, vec(2))
+                holoColor(177 + DropBubbles:count() + 1, randvec(0, 255))
+                holoShadow(177 + DropBubbles:count() + 1, 1)
+                
+                DropBubbles:pushArray(array(Holo, Subdata[1, entity], Subdata[2, number]))
+                
+                Finding = 1
+            }
+        }
+    }
+}
