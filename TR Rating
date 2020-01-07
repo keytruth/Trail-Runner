@@ -1,0 +1,75 @@
+@name TR Rating
+@inputs [E]:wirelink
+@persist [Data]:gtable [Imena Chisla]:array [T]:array
+
+interval(2500)
+
+if(duped() | dupefinished())
+{
+    reset()   
+}
+
+if(first())
+{
+    Data = gTable("TrailRunner")
+
+    E:egpClear()    
+    
+    E:egpRoundedBox(1, vec2(255, 255), vec2(500, 500))
+    E:egpAlign(1, 1)
+    E:egpSize(1, 20)
+    E:egpColor(1, vec(200, 75, 0))
+    
+    E:egpText(2, "Trail Runner TOP's", vec2(255, 25))
+    E:egpAlign(2, 1)
+    E:egpSize(2, 35)
+}
+
+if(perf())
+{
+    Imena = array()
+    Chisla = array()
+    
+    for(I = 0, 5)
+    {
+        E:egpRoundedBox(45 + I, vec2(255, 95 + ( I * 75)), vec2(450, 50)) 
+        E:egpAlign(45 + I, 1)
+        E:egpColor(45 + I, vec(200, 95, 0))  
+        
+        E:egpText(55 + I, "None", vec2(255, 75 + ( I * 75)))
+        E:egpAlign(55 + I, 1)
+        E:egpSize(55 + I, 35)
+    }
+    
+    for(I = 1, Data["Accounts", table]:count())
+    {
+        local Name = Data["Accounts", table][Data["Accounts", table]:keys():string(I), table]["Name", string]
+        local Speed = Data["Accounts", table][Data["Accounts", table]:keys():string(I), table]["Speed", number]
+    
+        Imena:pushString(Name)
+        Chisla:pushNumber(Speed)
+    }
+    
+    for(I = 1, 6)
+    {
+        local Index = 0
+        
+        for(I = 0, Chisla:count())
+        {
+            if(Chisla[I, number] != Chisla:max()){ continue }
+            Index = I  
+            break
+        }
+        
+        T[I, string] = (Chisla:max() != -1 ? Imena[Index, string] + " (" + Chisla:max() + ")" : "")
+        Chisla[Index, number] = -1
+        
+    }
+}
+
+E:egpSetText(55, T[1, string])
+E:egpSetText(56, T[2, string])
+E:egpSetText(57, T[3, string])
+E:egpSetText(58, T[4, string])
+E:egpSetText(59, T[5, string])
+E:egpSetText(60, T[6, string])
