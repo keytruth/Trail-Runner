@@ -1,0 +1,64 @@
+@name TR ChatCommands
+@persist [Data]:gtable
+
+interval(100)
+
+if(first())
+{
+    Data = gTable("TrailRunner")   
+    runOnChat(1)
+    #dsJoinGroup("TrailRunner")
+}
+
+function void message(Text:string)
+{
+    concmd("say [Trail Runner]: " + Text)
+}
+
+#if(lastSpoke() != noentity() && changed(lastSaid()))
+#{
+    if(lastSpoke():lastSaid() == "/speed")
+    {
+        message(lastSpoke():name() + ", Ваша скорость — " + Data["Accounts", table][lastSpoke():steamID(), table]["Speed", number] + "!")
+    }
+    elseif(lastSpoke():lastSaid() == "/reset")
+    {
+        Data["Accounts", table][lastSpoke():steamID(), table]["Speed", number] = 0
+        message(lastSpoke():name() + ", Вы успешно сбросили собственную скорость!")
+    }
+    elseif(lastSpoke():lastSaid() == "/time")
+    {
+        local Minutes = ceil(entity():creationTime()/60)
+        local Message = (Minutes >= 60 ? Minutes / 60 + " час(ов)." : Minutes + " минут(ы).")
+        
+        message(lastSpoke():name() + ", игровой режим стоит на данном сервере уже как: " + Message)
+    }
+    elseif(lastSpoke():lastSaid() == "/spawn")
+    {
+        if(lastSpoke():isAlive())
+        {
+            lastSpoke():setPos(vec(827.499512, -148.528122, -143.968750))
+        }
+        message(lastSpoke():name() + ", Вы успешно телепортированы на точку возрождения!")
+    }
+    #[elseif(lastSpoke():lastSaid():explode(" "):string(1) == "/drop")
+    {
+        dsSend("drop_bubble", "TrailRunner", array(lastSpoke(), lastSpoke():lastSaid():explode(" "):string(2):toNumber()))   
+    }]#
+#} 
+
+if(chatClk())
+{
+    if(lastSpoke() != noentity())
+    {
+        if(changed(lastSpoke():lastSaid()))
+        {
+            if(lastSpoke():lastSaid():explode(" "):string(1) == "/drop")
+            {
+                dsSend("drop_bubble", "TrailRunner", array(lastSpoke(), lastSpoke():lastSaid():explode(" "):string(2):toNumber()))    
+            } 
+        }   
+    }
+    
+    exit()
+}
