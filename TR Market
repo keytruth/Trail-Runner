@@ -1,0 +1,185 @@
+@name TR Market
+@persist [E]:wirelink [P]:entity [Data]:gtable
+
+interval(100)
+
+if(first())
+{
+    Data = gTable("TrailRunner")
+    P = noentity()
+    
+    local WT = entity():isWeldedTo():wirelink():entity():type()
+    
+    if(WT == "gmod_wire_egp")
+    {
+        E = entity():isWeldedTo():wirelink()
+        
+        entity():setAlpha(0)
+    }
+    else
+    {
+        selfDestruct()   
+    }
+    
+    E:egpBox(1, vec2(0, 0), vec2(1555, 1555))
+    E:egpAlign(1, 1)
+    E:egpColor(1, vec(200, 75, 0))
+    
+    E:egpText(2, "Trail Runner Shop", vec2(255, 35))
+    E:egpAlign(2, 1)
+    E:egpSize(2, 30)
+    
+    E:egpText(3, "(Trails)", vec2(255, 65))
+    E:egpAlign(3, 1)
+    E:egpSize(3, 21)
+    
+    for(I = 1, 5)
+    {
+        E:egpRoundedBox(3 + I, vec2(255, 65 + (I * 70)), vec2(300, 50))
+        E:egpAlign(3 + I, 1)
+        E:egpColor(3 + I, vec(200, 95, 0))   
+    }
+
+    E:egpText(9 , "Сердца (1500 sp.)", vec2(255, 123))
+    E:egpAlign(9, 1)
+    E:egpSize(9, 23)
+    
+    E:egpText(10 , "Плазма (3000 sp.)", vec2(255, 193))
+    E:egpAlign(10, 1)
+    E:egpSize(10, 23)
+    
+    E:egpText(11 , "Труба (6000 sp.)", vec2(255, 263))
+    E:egpAlign(11, 1)
+    E:egpSize(11, 23)
+    
+    E:egpText(12 , "Электричество (12000 sp.)", vec2(255, 333))
+    E:egpAlign(12, 1)
+    E:egpSize(12, 23)
+    
+    E:egpText(13 , "LOL (24000 sp.)", vec2(255, 403))
+    E:egpAlign(13, 1)
+    E:egpSize(13, 23)
+}
+
+if(findCanQuery())
+{
+    findByClass(owner():type())
+    local LP = findClosest(entity():pos())
+
+    if(LP != noentity())
+    {
+        if(LP:pos():distance(entity():pos()) <= 85)
+        {
+            P = LP
+        }
+        else
+        {
+            P = noentity()   
+        }
+    }
+}
+
+Clicked = (changed(P:keyUse()) & P:keyUse())
+
+if(inrange(E:egpCursor(P), E:egpPos(4) - E:egpSize(4) / 2, E:egpPos(4) + E:egpSize(4) / 2))
+{
+    E:egpColor(4, vec(180, 75, 0))
+    
+    if(Clicked)
+    {
+        if(Data["Accounts", table][P:steamID(), table]["Speed", number] >= 1500)
+        {
+            Data["Accounts", table][P:steamID(), table]["Speed", number] = Data["Accounts", table][P:steamID(), table]["Speed", number] - 1500
+            
+            P:soundPlay(322, 1, "buttons/button9.wav")
+            Data["Accounts", table][P:steamID(), table]["Trail", string] = "trails/love"
+        }  
+    } 
+}
+else
+{
+    E:egpColor(4, vec(200, 95, 0))   
+}
+
+if(inrange(E:egpCursor(P), E:egpPos(5) - E:egpSize(5) / 2, E:egpPos(5) + E:egpSize(5) / 2))
+{
+    E:egpColor(5, vec(180, 75, 0))
+    
+    if(Clicked)
+    {
+        if(Data["Accounts", table][P:steamID(), table]["Speed", number] >= 3000)
+        {
+            Data["Accounts", table][P:steamID(), table]["Speed", number] = Data["Accounts", table][P:steamID(), table]["Speed", number] - 3000
+            
+            P:soundPlay(322, 1, "buttons/button9.wav")
+            Data["Accounts", table][P:steamID(), table]["Trail", string] = "trails/plasma"   
+        }  
+    }      
+}
+else
+{
+    E:egpColor(5, vec(200, 95, 0))   
+}
+
+
+if(inrange(E:egpCursor(P), E:egpPos(6) - E:egpSize(6) / 2, E:egpPos(6) + E:egpSize(6) / 2))
+{
+    E:egpColor(6, vec(180, 75, 0))    
+    
+    if(Clicked)
+    {
+        if(Data["Accounts", table][P:steamID(), table]["Speed", number] >= 6000)
+        {
+            Data["Accounts", table][P:steamID(), table]["Speed", number] = Data["Accounts", table][P:steamID(), table]["Speed", number] - 6000
+            
+            P:soundPlay(322, 1, "buttons/button9.wav")
+            Data["Accounts", table][P:steamID(), table]["Trail", string] = "trails/tube"  
+        }  
+    }  
+}
+else
+{
+    E:egpColor(6, vec(200, 95, 0))   
+}
+
+
+if(inrange(E:egpCursor(P), E:egpPos(7) - E:egpSize(7) / 2, E:egpPos(7) + E:egpSize(7) / 2))
+{
+    E:egpColor(7, vec(180, 75, 0))    
+    
+    if(Clicked)
+    {
+        if(Data["Accounts", table][P:steamID(), table]["Speed", number] >= 12000)
+        {
+            Data["Accounts", table][P:steamID(), table]["Speed", number] = Data["Accounts", table][P:steamID(), table]["Speed", number] - 12000
+            
+            P:soundPlay(322, 1, "buttons/button9.wav")
+            Data["Accounts", table][P:steamID(), table]["Trail", string] = "trails/electric"  
+        }  
+    }  
+}
+else
+{
+    E:egpColor(7, vec(200, 95, 0))   
+}
+
+
+if(inrange(E:egpCursor(P), E:egpPos(8) - E:egpSize(8) / 2, E:egpPos(8) + E:egpSize(8) / 2))
+{
+    E:egpColor(8, vec(180, 75, 0))  
+    
+    if(Clicked)
+    {
+        if(Data["Accounts", table][P:steamID(), table]["Speed", number] >= 24000)
+        {
+            Data["Accounts", table][P:steamID(), table]["Speed", number] = Data["Accounts", table][P:steamID(), table]["Speed", number] - 24000
+            
+            P:soundPlay(322, 1, "buttons/button9.wav")
+            Data["Accounts", table][P:steamID(), table]["Trail", string] = "trails/lol"   
+        }  
+    }    
+}
+else
+{
+    E:egpColor(8, vec(200, 95, 0))   
+}
